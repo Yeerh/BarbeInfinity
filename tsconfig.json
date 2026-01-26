@@ -1,26 +1,50 @@
 {
   "compilerOptions": {
+    /* Base */
+    "target": "ES2022",
     "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "skipLibCheck": true,
+    "jsx": "preserve",
+
+    /* Next / TS behavior */
     "strict": true,
     "noEmit": true,
-    "esModuleInterop": true,
+    "isolatedModules": true,
+    "incremental": true,
+
+    /* Module system (Next modern) */
     "module": "esnext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "preserve",
-    "incremental": true,
+
+    /* Interop / type noise reduction */
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+
+    /* JS handling (mantenha true se você tem arquivos .js no projeto) */
+    "allowJs": true,
+
+    /* Next plugin */
     "plugins": [
       {
         "name": "next"
       }
     ],
+
+    /* Path aliases */
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@prisma-generated/*": ["./prisma/generated/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "prisma/**/*.ts",
+    ".next/types/**/*.ts"
+  ],
+
   "exclude": ["node_modules"]
 }
