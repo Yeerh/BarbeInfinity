@@ -5,6 +5,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import ServiceIntem from "@/app/_components/service-intem"
+import PhoneItem from "../../_components/phone-intem"
 
 interface BarbeshopPageProps {
   params: { id: string }
@@ -14,13 +15,11 @@ const BarbeshopPage = async ({ params }: BarbeshopPageProps) => {
   const barbershop = await db.barbeShop.findUnique({
     where: { id: params.id },
     include: {
-      services: true, // ✅ ajuste se o nome do relation for diferente
+      services: true,
     },
   })
 
-  if (!barbershop) {
-    notFound()
-  }
+  if (!barbershop) notFound()
 
   return (
     <div>
@@ -80,13 +79,22 @@ const BarbeshopPage = async ({ params }: BarbeshopPageProps) => {
       </div>
 
       {/* Serviços */}
-      <div className="p-5">
+      <div className="space-y-3 p-5">
         <h2 className="text-xs font-bold uppercase text-gray-400">Serviços</h2>
 
         <div className="mt-3 flex flex-col gap-3">
           {barbershop.services.map((service) => (
             <ServiceIntem key={service.id} service={service} />
           ))}
+        </div>
+      </div>
+
+      {/* Contato */}
+      <div className="border-t p-5">
+        <h2 className="text-xs font-bold uppercase text-gray-400">Contato</h2>
+
+        <div className="mt-3">
+          <PhoneItem phone={barbershop.phone} />
         </div>
       </div>
     </div>

@@ -1,10 +1,10 @@
 import Image from "next/image"
+import Link from "next/link"
 import { BarbeShop } from "@prisma/client"
 import { Card, CardContent } from "./ui/card"
 import { Button } from "./ui/button"
 import { Badge } from "./ui/badge"
 import { StarIcon } from "lucide-react"
-import Link from "next/link"
 
 interface BarbeShopIntemProps {
   barbeShop: BarbeShop
@@ -23,7 +23,7 @@ const BarbeShopIntem = ({ barbeShop }: BarbeShopIntemProps) => {
             className="rounded-xl object-cover"
           />
 
-          {/* Avaliação */}
+          {/* Nota */}
           <Badge
             variant="secondary"
             className="absolute left-2 top-2 flex items-center gap-1"
@@ -34,7 +34,7 @@ const BarbeShopIntem = ({ barbeShop }: BarbeShopIntemProps) => {
         </div>
 
         {/* Conteúdo */}
-        <div className="px-1 py-3">
+        <div className="w-[159px] px-1 py-3">
           <h3 className="line-clamp-1 font-semibold leading-tight">
             {barbeShop.name}
           </h3>
@@ -43,8 +43,13 @@ const BarbeShopIntem = ({ barbeShop }: BarbeShopIntemProps) => {
             {barbeShop.address}
           </p>
 
-          <Button variant="secondary" className="mt-3 w-full">
-            <Link href={`/barbeshops/${barbeShop.id}`}></Link>
+          {/* ✅ BOTÃO AGENDAR LINKANDO */}
+          <Button
+            asChild
+            variant="secondary"
+            className="mx-auto mt-3 h-9 w-[140px] text-sm font-medium"
+          >
+            <Link href={`/barbeshops/${barbeShop.id}`}>Agendar</Link>
           </Button>
         </div>
       </CardContent>

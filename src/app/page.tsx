@@ -13,10 +13,16 @@ import { SearchIcon } from "lucide-react"
 import { db } from "./_lib/prisma"
 
 const Home = async () => {
-  const barbeShops = await db.barbeShop.findMany()
+  const [barbeShops, popularBarbeShops] = await Promise.all([
+    db.barbeShop.findMany(),
+    db.barbeShop.findMany({ orderBy: { name: "desc" } }),
+  ])
 
-  const popularBarbeShops = await db.barbeShop.findMany({
-    orderBy: { name: "desc" },
+  const today = new Date()
+  const formattedDate = today.toLocaleDateString("pt-BR", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
   })
 
   return (
@@ -25,8 +31,9 @@ const Home = async () => {
 
       <div className="p-5">
         <h2 className="text-xl font-bold">Olá</h2>
-        <p>Terça-Feira, 26 de Janeiro</p>
+        <p className="capitalize">{formattedDate}</p>
 
+        {/* Busca */}
         <div className="mt-6 flex items-center gap-2">
           <Input placeholder="Faça sua busca.." />
           <Button type="button">
@@ -34,7 +41,7 @@ const Home = async () => {
           </Button>
         </div>
 
-        {/* Categorias (Quick Search) */}
+        {/* Quick Search */}
         <div className="mt-4 flex gap-3 overflow-x-auto pb-2 [&::-webkit-scrollbar]:hidden">
           {quickSearchOptions.map((option) => (
             <Button
@@ -55,12 +62,12 @@ const Home = async () => {
         </div>
 
         {/* Banner */}
-        <div className="relative mt-4 h-[150px] w-full">
+        <div className="relative mt-4 h-[150px] w-full overflow-hidden rounded-md">
           <Image
             src="/banner.png"
             alt="Banner InfinityBarber"
             fill
-            className="rounded-md object-cover"
+            className="object-cover"
             priority
           />
         </div>
@@ -85,7 +92,7 @@ const Home = async () => {
           Recomendados
         </h2>
 
-        <div className="flex gap-4 overflow-x-auto pb-2 [&::-webkit-scrollbar]:hidden">
+        <div className="-mr-5 flex gap-4 overflow-x-auto pb-2 pr-5 [&::-webkit-scrollbar]:hidden">
           {barbeShops.map((shop) => (
             <BarbeShopIntem key={shop.id} barbeShop={shop} />
           ))}
@@ -96,7 +103,7 @@ const Home = async () => {
           Populares
         </h2>
 
-        <div className="flex gap-4 overflow-x-auto pb-2 [&::-webkit-scrollbar]:hidden">
+        <div className="-mr-5 flex gap-4 overflow-x-auto pb-2 pr-5 [&::-webkit-scrollbar]:hidden">
           {popularBarbeShops.map((shop) => (
             <BarbeShopIntem key={shop.id} barbeShop={shop} />
           ))}
