@@ -1,11 +1,12 @@
+// src/app/page.tsx
 import Header from "./_components/header"
 
 import { Button } from "./_components/ui/button"
 import { Input } from "./_components/ui/input"
 import { Card, CardContent } from "./_components/ui/card"
-import { Badge } from "./_components/ui/badge"
-import { Avatar, AvatarImage } from "./_components/ui/avatar"
+import { quickSearchOptions } from "./_constants/search"
 import BarbeShopIntem from "./_components/barbershop-intem"
+import BookingItem from "./_components/booking-intem"
 
 import Image from "next/image"
 import { SearchIcon } from "lucide-react"
@@ -13,6 +14,10 @@ import { db } from "./_lib/prisma"
 
 const Home = async () => {
   const barbeShops = await db.barbeShop.findMany()
+
+  const popularBarbeShops = await db.barbeShop.findMany({
+    orderBy: { name: "desc" },
+  })
 
   return (
     <div>
@@ -22,13 +27,34 @@ const Home = async () => {
         <h2 className="text-xl font-bold">Olá</h2>
         <p>Terça-Feira, 26 de Janeiro</p>
 
-        <div className="mt-4 flex items-center gap-2">
+        <div className="mt-6 flex items-center gap-2">
           <Input placeholder="Faça sua busca.." />
           <Button type="button">
             <SearchIcon />
           </Button>
         </div>
 
+        {/* Categorias (Quick Search) */}
+        <div className="mt-4 flex gap-3 overflow-x-auto pb-2 [&::-webkit-scrollbar]:hidden">
+          {quickSearchOptions.map((option) => (
+            <Button
+              key={option.label}
+              className="shrink-0 gap-2"
+              variant="secondary"
+              title={option.title}
+            >
+              <Image
+                src={option.imageUrl}
+                width={16}
+                height={16}
+                alt={option.label}
+              />
+              {option.label}
+            </Button>
+          ))}
+        </div>
+
+        {/* Banner */}
         <div className="relative mt-4 h-[150px] w-full">
           <Image
             src="/banner.png"
@@ -39,42 +65,49 @@ const Home = async () => {
           />
         </div>
 
+        {/* Agendamentos */}
         <h2 className="mb-3 mt-6 text-xs font-bold uppercase text-gray-400">
           Agendamentos
         </h2>
 
-        <Card>
-          <CardContent className="flex items-center justify-between p-5">
-            <div className="flex flex-col gap-2">
-              <Badge className="w-fit">Confirmado</Badge>
+        <BookingItem
+          serviceName="Corte de Cabelo"
+          barberShopName="Barbearia Infinity"
+          barberShopImage="https://utfs.io/f/c97a2dc9-cf62-468b-a851-bfd2bdde775f-16p.png"
+          status="Confirmado"
+          month="Agosto"
+          day="27"
+          time="20:00"
+        />
 
-              <h3 className="font-semibold">Corte de Cabelo</h3>
-
-              <div className="flex items-center gap-2">
-                <Avatar className="h-6 w-6">
-                  <AvatarImage src="https://utfs.io/f/c97a2dc9-cf62-468b-a851-bfd2bdde775f-16p.png" />
-                </Avatar>
-                <p className="text-sm">Barbearia Infinity</p>
-              </div>
-            </div>
-
-            <div className="flex flex-col items-center justify-center border-l-2 border-gray-200 pl-4 text-right leading-tight">
-              <p className="text-sm">Agosto</p>
-              <p className="text-2xl font-bold">27</p>
-              <p className="text-sm">20:00</p>
-            </div>
-          </CardContent>
-        </Card>
-
+        {/* Recomendados */}
         <h2 className="mb-3 mt-6 text-xs font-bold uppercase text-gray-400">
           Recomendados
         </h2>
 
-        <div className="flex gap-4 overflow-auto [&::-webkit-scrollbar]:hidden">
-          {barbeShops.map((barbeShop) => (
-            <BarbeShopIntem key={barbeShop.id} barbeShop={barbeShop} />
+        <div className="flex gap-4 overflow-x-auto pb-2 [&::-webkit-scrollbar]:hidden">
+          {barbeShops.map((shop) => (
+            <BarbeShopIntem key={shop.id} barbeShop={shop} />
           ))}
         </div>
+
+        {/* Populares */}
+        <h2 className="mb-3 mt-6 text-xs font-bold uppercase text-gray-400">
+          Populares
+        </h2>
+
+        <div className="flex gap-4 overflow-x-auto pb-2 [&::-webkit-scrollbar]:hidden">
+          {popularBarbeShops.map((shop) => (
+            <BarbeShopIntem key={shop.id} barbeShop={shop} />
+          ))}
+        </div>
+
+        {/* Footer */}
+        <Card className="mt-6">
+          <CardContent className="px-5 py-6">
+            2026 Copyright Infinity Web
+          </CardContent>
+        </Card>
       </div>
     </div>
   )
