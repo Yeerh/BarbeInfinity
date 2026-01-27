@@ -5,11 +5,15 @@ import { Input } from "./_components/ui/input"
 import { Card, CardContent } from "./_components/ui/card"
 import { Badge } from "./_components/ui/badge"
 import { Avatar, AvatarImage } from "./_components/ui/avatar"
+import BarbeShopIntem from "./_components/barbershop-intem"
 
 import Image from "next/image"
 import { SearchIcon } from "lucide-react"
+import { db } from "./_lib/prisma"
 
-const Home = () => {
+const Home = async () => {
+  const barbeShops = await db.barbeShop.findMany()
+
   return (
     <div>
       <Header />
@@ -35,9 +39,12 @@ const Home = () => {
           />
         </div>
 
-        <Card className="mt-6">
+        <h2 className="mb-3 mt-6 text-xs font-bold uppercase text-gray-400">
+          Agendamentos
+        </h2>
+
+        <Card>
           <CardContent className="flex items-center justify-between p-5">
-            {/* ESQUERDA */}
             <div className="flex flex-col gap-2">
               <Badge className="w-fit">Confirmado</Badge>
 
@@ -51,7 +58,6 @@ const Home = () => {
               </div>
             </div>
 
-            {/* DIREITA (DATA/HORA) */}
             <div className="flex flex-col items-center justify-center border-l-2 border-gray-200 pl-4 text-right leading-tight">
               <p className="text-sm">Agosto</p>
               <p className="text-2xl font-bold">27</p>
@@ -59,6 +65,16 @@ const Home = () => {
             </div>
           </CardContent>
         </Card>
+
+        <h2 className="mb-3 mt-6 text-xs font-bold uppercase text-gray-400">
+          Recomendados
+        </h2>
+
+        <div className="flex gap-4 overflow-auto [&::-webkit-scrollbar]:hidden">
+          {barbeShops.map((barbeShop) => (
+            <BarbeShopIntem key={barbeShop.id} barbeShop={barbeShop} />
+          ))}
+        </div>
       </div>
     </div>
   )
