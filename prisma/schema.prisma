@@ -1,80 +1,150 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// prisma/schema.prisma
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// This is your Prisma schema file.
+// Docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "./generated"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
-model User{
-   id String @id @default(cuid())
-   email String @unique
-   name String?
-      bookings Booking[]
+model User {
+  id            String          @id @default(cuid())
+  name          String?
+  email         String          @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  Authenticator Authenticator[]
+  bookings      Booking[]
+  ratings       Rating[]
 
-   createdAt DateTime @default(now())
-   updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-model BarbeShop{
-   id String @id @default(cuid())
-   name String
-   address String
-   bookings Booking[]
-   description String?
-  imageUrl String?
-   phone String
-   createdAt DateTime @default(now())
-   updatedAt DateTime @updatedAt
-   services BarbeShopService[]  
-}
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
 
-model BarbeShopService{
-    id String @id @default(cuid())
-    barbeShopId String
-    name String
-    description String?
-    price Decimal @db.Decimal(10, 2)
-    durationInMinutes Int
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-       bookings Booking[]
-
-    imageUrl String?
-    barbeshop BarbeShop @relation(fields: [barbeShopId], references: [id], onDelete: Cascade)
-}
-
-model Booking{
-  id String @id @default(cuid())
-  userId String
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  barbeShopId String
-  barbeShop BarbeShop @relation(fields: [barbeShopId], references: [id], onDelete: Cascade)
-  serviceId String
-  service BarbeShopService @relation(fields: [serviceId], references: [id], onDelete: Cascade)
-  appointmentDate DateTime
-  date DateTime
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
 }
 
-model Rating{
-   id String @id @default(cuid())
-   userId String
-   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-   barbeShopId String
-   barbeShop BarbeShop @relation(fields: [barbeShopId], references: [id], onDelete: Cascade)
-   rating Int
-   comment String?
-   createdAt DateTime @default(now())
-   updatedAt DateTime @updatedAt
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+// Optional for WebAuthn support
+model Authenticator {
+  credentialID         String  @unique
+  userId               String
+  providerAccountId    String
+  credentialPublicKey  String
+  counter              Int
+  credentialDeviceType String
+  credentialBackedUp   Boolean
+  transports           String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, credentialID])
+}
+
+model BarbeShop {
+  id          String             @id @default(cuid())
+  name        String
+  address     String
+  description String?
+  imageUrl    String?
+  phone       String
+
+  bookings    Booking[]
+  services    BarbeShopService[]
+  ratings     Rating[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model BarbeShopService {
+  id                String    @id @default(cuid())
+  barbeShopId       String
+  name              String
+  description       String?
+  price             Decimal   @db.Decimal(10, 2)
+  durationInMinutes Int
+  imageUrl          String?
+
+  barbeshop BarbeShop @relation(fields: [barbeShopId], references: [id], onDelete: Cascade)
+  bookings  Booking[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Booking {
+  id              String           @id @default(cuid())
+  userId          String
+  barbeShopId     String
+  serviceId       String
+  appointmentDate DateTime
+  date            DateTime
+
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  barbeShop BarbeShop       @relation(fields: [barbeShopId], references: [id], onDelete: Cascade)
+  service   BarbeShopService @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Rating {
+  id         String  @id @default(cuid())
+  userId     String
+  barbeShopId String
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  barbeShop BarbeShop @relation(fields: [barbeShopId], references: [id], onDelete: Cascade)
+
+  rating  Int
+  comment String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, barbeShopId])
 }

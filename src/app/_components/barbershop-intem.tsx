@@ -1,13 +1,14 @@
-import Image from "next/image"
-import Link from "next/link"
-import { BarbeShop } from "@prisma/client"
-import { Card, CardContent } from "./ui/card"
-import { Button } from "./ui/button"
-import { Badge } from "./ui/badge"
-import { StarIcon } from "lucide-react"
+import Image from "next/image";
+import Link from "next/link";
+import type { BarbeShop } from "../../../prisma/generated/client";
+
+import { Card, CardContent } from "./ui/card";
+import { Button } from "./ui/button";
+import { Badge } from "./ui/badge";
+import { StarIcon } from "lucide-react";
 
 interface BarbeShopIntemProps {
-  barbeShop: BarbeShop
+  barbeShop: BarbeShop;
 }
 
 const BarbeShopIntem = ({ barbeShop }: BarbeShopIntemProps) => {
@@ -43,7 +44,6 @@ const BarbeShopIntem = ({ barbeShop }: BarbeShopIntemProps) => {
             {barbeShop.address}
           </p>
 
-          {/* ✅ BOTÃO AGENDAR LINKANDO */}
           <Button
             asChild
             variant="secondary"
@@ -54,7 +54,7 @@ const BarbeShopIntem = ({ barbeShop }: BarbeShopIntemProps) => {
         </div>
       </CardContent>
     </Card>
-  )
-}
+  );
+};
 
-export default BarbeShopIntem
+export default BarbeShopIntem;

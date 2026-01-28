@@ -1,11 +1,12 @@
 import { Button } from "@/app/_components/ui/button"
-import { db } from "../../_lib/prisma"
-import { ChevronLeft, MapIcon, MenuIcon, StarIcon } from "lucide-react"
+import  {db}  from "../../_lib/prisma"
+import { ChevronLeft, MapIcon, StarIcon } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import ServiceIntem from "@/app/_components/service-intem"
 import PhoneItem from "../../_components/phone-intem"
+import SidebarButton from "@/app/_components/sidebar-button"
 
 interface BarbeshopPageProps {
   params: { id: string }
@@ -35,6 +36,7 @@ const BarbeshopPage = async ({ params }: BarbeshopPageProps) => {
 
         <div className="absolute inset-0 bg-black/20" />
 
+        {/* Voltar */}
         <Button
           asChild
           size="icon"
@@ -46,13 +48,10 @@ const BarbeshopPage = async ({ params }: BarbeshopPageProps) => {
           </Link>
         </Button>
 
-        <Button
-          size="icon"
-          variant="secondary"
-          className="absolute right-4 top-4 z-10"
-        >
-          <MenuIcon />
-        </Button>
+        {/* Sidebar (Menu) */}
+        <div className="absolute right-4 top-4 z-10">
+          <SidebarButton />
+        </div>
       </div>
 
       {/* Conteúdo */}

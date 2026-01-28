@@ -1,29 +1,28 @@
 // src/app/page.tsx
-import Header from "./_components/header"
+import Header from "./_components/header";
+import Search from "./_components/search";
+import { Button } from "./_components/ui/button";
+import { Input } from "./_components/ui/input";
+import { Card, CardContent } from "./_components/ui/card";
 
-import { Button } from "./_components/ui/button"
-import { Input } from "./_components/ui/input"
-import { Card, CardContent } from "./_components/ui/card"
-import { quickSearchOptions } from "./_constants/search"
-import BarbeShopIntem from "./_components/barbershop-intem"
-import BookingItem from "./_components/booking-intem"
+import { quickSearchOptions } from "./_constants/search";
+import BarbeShopIntem from "./_components/barbershop-intem";
+import BookingItem from "./_components/booking-intem";
 
-import Image from "next/image"
-import { SearchIcon } from "lucide-react"
-import { db } from "./_lib/prisma"
-
+import Image from "next/image";
+import { SearchIcon } from "lucide-react";
+import { db } from "./_lib/prisma";
 const Home = async () => {
   const [barbeShops, popularBarbeShops] = await Promise.all([
     db.barbeShop.findMany(),
     db.barbeShop.findMany({ orderBy: { name: "desc" } }),
-  ])
+  ]);
 
-  const today = new Date()
-  const formattedDate = today.toLocaleDateString("pt-BR", {
+  const formattedDate = new Intl.DateTimeFormat("pt-BR", {
     weekday: "long",
     day: "2-digit",
     month: "long",
-  })
+  }).format(new Date());
 
   return (
     <div>
@@ -34,12 +33,9 @@ const Home = async () => {
         <p className="capitalize">{formattedDate}</p>
 
         {/* Busca */}
-        <div className="mt-6 flex items-center gap-2">
-          <Input placeholder="Faça sua busca.." />
-          <Button type="button">
-            <SearchIcon />
-          </Button>
-        </div>
+      <div className="mt-6">
+      <Search></Search>
+      </div>
 
         {/* Quick Search */}
         <div className="mt-4 flex gap-3 overflow-x-auto pb-2 [&::-webkit-scrollbar]:hidden">
@@ -48,7 +44,7 @@ const Home = async () => {
               key={option.label}
               className="shrink-0 gap-2"
               variant="secondary"
-              title={option.title}
+              title={option.title ?? option.label}
             >
               <Image
                 src={option.imageUrl}
@@ -117,7 +113,7 @@ const Home = async () => {
         </Card>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;
