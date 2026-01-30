@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-
+import BookingsPage from "../bookings/page";
 import { Button } from "./ui/button";
 import {
   Sheet,
@@ -122,13 +122,13 @@ const SidebarButton = () => {
               Início
             </Link>
           </Button>
+<Button asChild variant="ghost" className="justify-start gap-2">
+  <Link href="bookings">
+    <CalendarIcon size={18} />
+    Agendamentos
+  </Link>
+</Button>
 
-          <Button asChild variant="ghost" className="justify-start gap-2">
-            <Link href="/bookings">
-              <CalendarIcon size={18} />
-              Agendamentos
-            </Link>
-          </Button>
 
           {/* Categorias (AGORA COM LINKS) */}
           <div className="mt-4">

@@ -201,6 +201,7 @@ exports.Prisma.BookingScalarFieldEnum = {
   serviceId: 'serviceId',
   appointmentDate: 'appointmentDate',
   date: 'date',
+  status: 'status',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -229,7 +230,11 @@ exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
 };
-
+exports.BookingStatus = exports.$Enums.BookingStatus = {
+  PENDENTE: 'PENDENTE',
+  CONFIRMADO: 'CONFIRMADO',
+  FINALIZADO: 'FINALIZADO'
+};
 
 exports.Prisma.ModelName = {
   User: 'User',

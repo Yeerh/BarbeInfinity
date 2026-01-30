@@ -2,7 +2,6 @@
 import Header from "./_components/header";
 import Search from "./_components/search";
 import { Button } from "./_components/ui/button";
-import { Input } from "./_components/ui/input";
 import { Card, CardContent } from "./_components/ui/card";
 
 import { quickSearchOptions } from "./_constants/search";
@@ -10,9 +9,13 @@ import BarbeShopIntem from "./_components/barbershop-intem";
 import BookingItem from "./_components/booking-intem";
 
 import Image from "next/image";
-import { SearchIcon } from "lucide-react";
 import { db } from "./_lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "./api/auth/[...nextauth]/route";
+
 const Home = async () => {
+  const session = await getServerSession(authOptions);
+
   const [barbeShops, popularBarbeShops] = await Promise.all([
     db.barbeShop.findMany(),
     db.barbeShop.findMany({ orderBy: { name: "desc" } }),
@@ -24,6 +27,25 @@ const Home = async () => {
     month: "long",
   }).format(new Date());
 
+  // ✅ userId seguro (porque session.user.id não vem por padrão no NextAuth)
+  const userId = (session?.user as { id?: string } | undefined)?.id;
+
+  // ✅ SOMENTE CONFIRMADOS NA HOME
+  const bookings = userId
+    ? await db.booking.findMany({
+        where: {
+          userId,
+          status: "CONFIRMADO",
+        },
+        include: {
+          service: true,
+          barbeShop: true,
+        },
+        orderBy: { appointmentDate: "desc" },
+        take: 5, // opcional: limita para não lotar a home
+      })
+    : [];
+
   return (
     <div>
       <Header />
@@ -33,9 +55,9 @@ const Home = async () => {
         <p className="capitalize">{formattedDate}</p>
 
         {/* Busca */}
-      <div className="mt-6">
-      <Search></Search>
-      </div>
+        <div className="mt-6">
+          <Search />
+        </div>
 
         {/* Quick Search */}
         <div className="mt-4 flex gap-3 overflow-x-auto pb-2 [&::-webkit-scrollbar]:hidden">
@@ -70,18 +92,22 @@ const Home = async () => {
 
         {/* Agendamentos */}
         <h2 className="mb-3 mt-6 text-xs font-bold uppercase text-gray-400">
-          Agendamentos
+          Agendamentos confirmados
         </h2>
 
-        <BookingItem
-          serviceName="Corte de Cabelo"
-          barberShopName="Barbearia Infinity"
-          barberShopImage="https://utfs.io/f/c97a2dc9-cf62-468b-a851-bfd2bdde775f-16p.png"
-          status="Confirmado"
-          month="Agosto"
-          day="27"
-          time="20:00"
-        />
+        {bookings.length === 0 ? (
+          <p className="text-sm text-gray-400">
+            {userId
+              ? "Você ainda não tem agendamentos confirmados."
+              : "Faça login para ver seus agendamentos confirmados."}
+          </p>
+        ) : (
+          <div className="flex flex-col gap-3">
+            {bookings.map((booking) => (
+              <BookingItem key={booking.id} booking={booking} />
+            ))}
+          </div>
+        )}
 
         {/* Recomendados */}
         <h2 className="mb-3 mt-6 text-xs font-bold uppercase text-gray-400">
