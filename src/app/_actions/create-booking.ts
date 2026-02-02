@@ -7,7 +7,7 @@ import { authOptions } from "@/app/_lib/auth";
 export interface CreateBookingParams {
   serviceId: string;
   barbeShopId: string;
-  appointmentDate: Date;
+  appointmentDate: string;
 }
 
 export async function createBooking(
@@ -22,12 +22,16 @@ export async function createBooking(
     }
 
     const { serviceId, barbeShopId, appointmentDate } = params;
+    const appointmentDateObj = new Date(appointmentDate);
+    if (Number.isNaN(appointmentDateObj.getTime())) {
+      return { ok: false, message: "Data inválida para o agendamento." };
+    }
 
     // ✅ trava por código (evita duplicar o mesmo horário)
     const exists = await db.booking.findFirst({
       where: {
         serviceId,
-        appointmentDate,
+        appointmentDate: appointmentDateObj,
       },
       select: { id: true },
     });

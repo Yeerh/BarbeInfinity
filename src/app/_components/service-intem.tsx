@@ -175,7 +175,7 @@ const ServiceIntem = ({ service }: ServiceIntemProps) => {
       const result = await createBooking({
         serviceId: service.id,
         barbeShopId: service.barbeShopId,
-        appointmentDate,
+        appointmentDate: appointmentDate.toISOString(),
       });
       if (!result.ok) {
         toast.error(result.message);
