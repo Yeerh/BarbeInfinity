@@ -48,9 +48,15 @@ export async function createBooking(
         userId,
         serviceId,
         barbeShopId,
-        appointmentDate,
+        appointmentDate: appointmentDateObj,
         // status: "PENDENTE", // se tiver status no schema
       },
+    });
+    console.log("booking created", {
+      userId,
+      serviceId,
+      barbeShopId,
+      appointmentDate: appointmentDateObj.toISOString(),
     });
 
     return { ok: true };
