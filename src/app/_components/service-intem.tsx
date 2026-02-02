@@ -83,7 +83,7 @@ const ServiceIntem = ({ service }: ServiceIntemProps) => {
     Record<string, Record<string, true>>
   >({});
 
-  const canConfirm = Boolean(date && time);
+  const canConfirm = Boolean(date && time && userId);
 
   const priceFormatted = Intl.NumberFormat("pt-BR", {
     style: "currency",
@@ -232,6 +232,12 @@ const ServiceIntem = ({ service }: ServiceIntemProps) => {
                 <SheetHeader>
                   <SheetTitle>Fazer Reserva</SheetTitle>
                 </SheetHeader>
+
+                {!userId && (
+                  <p className="mt-3 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">
+                    Para agendar, você precisa estar logado em uma conta.
+                  </p>
+                )}
 
                 <div className="border-b border-solid py-5">
                   <Calendar
