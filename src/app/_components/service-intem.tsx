@@ -170,11 +170,15 @@ const ServiceIntem = ({ service }: ServiceIntemProps) => {
     try {
       setIsLoading(true);
 
-      await createBooking({
+      const result = await createBooking({
         serviceId: service.id,
         barbeShopId: service.barbeShopId,
         appointmentDate,
       });
+      if (!result.ok) {
+        toast.error(result.message);
+        return;
+      }
 
       const refreshed = await getBookings({ serviceId: service.id, date });
       setDayBookings(refreshed);
