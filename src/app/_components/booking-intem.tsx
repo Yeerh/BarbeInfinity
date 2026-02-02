@@ -3,7 +3,6 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import type { Prisma } from "@prisma/client";
 
 import { cancelBooking } from "@/app/_actions/cancel-booking";
 
@@ -20,9 +19,21 @@ import {
 import { Button } from "./ui/button";
 import { PhoneIcon } from "lucide-react";
 
-type BookingWithRelations = Prisma.BookingGetPayload<{
-  include: { service: true; barbeShop: true };
-}>;
+type BookingWithRelations = {
+  id: string;
+  appointmentDate: Date | string;
+  status: BookingStatus;
+  service: {
+    name: string;
+    price: number | string;
+  };
+  barbeShop: {
+    name: string;
+    address: string;
+    phone: string;
+    imageUrl?: string | null;
+  };
+};
 
 interface BookingItemProps {
   booking: BookingWithRelations;
