@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import BookingsPage from "../bookings/page";
 import { Button } from "./ui/button";
 import {
   Sheet,

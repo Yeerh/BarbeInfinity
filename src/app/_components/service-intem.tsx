@@ -1,35 +1,28 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { BarbeShopService } from "@prisma/client";
+import type { BarbeShopService } from "@prisma/client";
 import Image from "next/image";
 import { ptBR } from "date-fns/locale";
 import { addMinutes, format, isBefore, startOfDay } from "date-fns";
 import { useSession } from "next-auth/react";
+import { toast } from "sonner";
 
 import { createBooking } from "@/app/_actions/create-booking";
-import { getBookings } from "@/app/_actions/get-bookings";
+import { getBookings, type DayBooking } from "@/app/_actions/get-bookings";
 
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "./ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
 import { Calendar } from "./ui/calendar";
 
 interface ServiceIntemProps {
   service: BarbeShopService;
 }
 
-/** ✅ Ajuste esses horários como quiser */
 const OPEN_TIME = "08:00";
 const CLOSE_TIME = "20:00";
 
-/** Gera horários entre OPEN e CLOSE com intervalo (min) */
 function generateTimeSlots(
   date: Date,
   openTime: string,
@@ -64,23 +57,21 @@ function buildAppointmentDate(date: Date, time: string) {
 }
 
 function dayKey(date: Date) {
-  // chave fixa por dia (yyyy-mm-dd)
   return format(startOfDay(date), "yyyy-MM-dd");
 }
 
 const ServiceIntem = ({ service }: ServiceIntemProps) => {
   const { data: session } = useSession();
-  const userId = (session?.user as any)?.id as string | undefined;
+  const userId = (session?.user as { id?: string } | undefined)?.id;
 
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [time, setTime] = useState<string | null>(null);
 
-  const [dayBookings, setDayBookings] = useState<any[]>([]);
+  const [dayBookings, setDayBookings] = useState<DayBooking[]>([]);
   const [isLoadingBookings, setIsLoadingBookings] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
 
-  // ✅ horários “sumidos” imediatamente (otimista) para o dia atual
   const [hiddenTimesByDay, setHiddenTimesByDay] = useState<
     Record<string, Record<string, true>>
   >({});
@@ -92,34 +83,27 @@ const ServiceIntem = ({ service }: ServiceIntemProps) => {
     currency: "BRL",
   }).format(Number(service.price));
 
-  // ✅ intervalo dinâmico (serve pra qualquer serviço)
   const interval = useMemo(() => {
     const d = Number(service.durationInMinutes);
-    return Number.isFinite(d) && d > 0 ? d : 30; // fallback 30min
+    return Number.isFinite(d) && d > 0 ? d : 30;
   }, [service.durationInMinutes]);
 
-  // ✅ lista de horários dinâmica baseada na data + intervalo
   const timeSlots = useMemo(() => {
     if (!date) return [];
     return generateTimeSlots(date, OPEN_TIME, CLOSE_TIME, interval);
   }, [date, interval]);
 
-  // Busca bookings do dia quando selecionar data
   useEffect(() => {
     const fetchBookings = async () => {
       if (!date) {
         setDayBookings([]);
         return;
       }
+
       try {
         setIsLoadingBookings(true);
-
-        const bookings = await getBookings({
-          serviceId: service.id,
-          date,
-        });
-
-        setDayBookings(bookings as any);
+        const bookings = await getBookings({ serviceId: service.id, date });
+        setDayBookings(bookings);
       } catch (e) {
         console.error(e);
         setDayBookings([]);
@@ -131,7 +115,6 @@ const ServiceIntem = ({ service }: ServiceIntemProps) => {
     fetchBookings();
   }, [date, service.id]);
 
-  // horários ocupados (do banco)
   const bookedTimes = useMemo(() => {
     const set = new Set<string>();
     for (const b of dayBookings) {
@@ -141,7 +124,6 @@ const ServiceIntem = ({ service }: ServiceIntemProps) => {
     return set;
   }, [dayBookings]);
 
-  // horários escondidos (otimista) para o dia selecionado
   const hiddenTimes = useMemo(() => {
     if (!date) return new Set<string>();
     const key = dayKey(date);
@@ -149,7 +131,6 @@ const ServiceIntem = ({ service }: ServiceIntemProps) => {
     return new Set(Object.keys(map));
   }, [date, hiddenTimesByDay]);
 
-  // Quando troca a data, limpa seleção de hora
   useEffect(() => {
     setTime(null);
   }, [date]);
@@ -158,21 +139,21 @@ const ServiceIntem = ({ service }: ServiceIntemProps) => {
     if (!date || !time) return;
 
     if (!userId) {
-      alert("Você precisa estar logado para reservar.");
+      toast.error("Você precisa estar logado para reservar.");
       return;
     }
 
-    // se já estiver ocupado/oculto, bloqueia
     if (bookedTimes.has(time) || hiddenTimes.has(time)) {
-      alert("Esse horário já foi reservado. Escolha outro.");
+      toast.error("Esse horário já foi reservado. Escolha outro.");
       return;
     }
 
     const selectedTime = time;
     const appointmentDate = buildAppointmentDate(date, selectedTime);
 
-    // ✅ some imediatamente do dia selecionado
     const key = dayKey(date);
+
+    // ✅ some imediatamente
     setHiddenTimesByDay((prev) => ({
       ...prev,
       [key]: { ...(prev[key] ?? {}), [selectedTime]: true },
@@ -189,15 +170,14 @@ const ServiceIntem = ({ service }: ServiceIntemProps) => {
         appointmentDate,
       });
 
-      // ✅ garante consistência com banco
       const refreshed = await getBookings({ serviceId: service.id, date });
-      setDayBookings(refreshed as any);
+      setDayBookings(refreshed);
 
-      alert("Reserva criada com sucesso!");
+      toast.success("Reserva criada com sucesso!");
     } catch (err) {
       console.error(err);
 
-      // ❌ se deu erro, “des-some” o horário
+      // ❌ desfaz o “sumir”
       setHiddenTimesByDay((prev) => {
         const copy = { ...prev };
         const dayMap = { ...(copy[key] ?? {}) };
@@ -206,7 +186,7 @@ const ServiceIntem = ({ service }: ServiceIntemProps) => {
         return copy;
       });
 
-      alert("Não foi possível criar a reserva.");
+      toast.error("Não foi possível criar a reserva.");
     } finally {
       setIsLoading(false);
     }
@@ -215,7 +195,6 @@ const ServiceIntem = ({ service }: ServiceIntemProps) => {
   return (
     <Card>
       <CardContent className="flex items-center gap-3 p-3">
-        {/* Imagem */}
         <div className="relative h-[110px] w-[110px] shrink-0 overflow-hidden rounded-lg">
           <Image
             src={service.imageUrl ?? "/placeholder.png"}
@@ -225,7 +204,6 @@ const ServiceIntem = ({ service }: ServiceIntemProps) => {
           />
         </div>
 
-        {/* Conteúdo */}
         <div className="flex w-full flex-col gap-2">
           <h3 className="font-semibold">{service.name}</h3>
 
@@ -248,7 +226,6 @@ const ServiceIntem = ({ service }: ServiceIntemProps) => {
                   <SheetTitle>Fazer Reserva</SheetTitle>
                 </SheetHeader>
 
-                {/* Data */}
                 <div className="border-b border-solid py-5">
                   <Calendar
                     mode="single"
@@ -267,16 +244,13 @@ const ServiceIntem = ({ service }: ServiceIntemProps) => {
                   )}
                 </div>
 
-                {/* Horários */}
                 <div className="py-5">
                   <p className="mb-3 text-xs font-bold uppercase text-gray-400">
                     Horários ({interval} min)
                   </p>
 
                   {isLoadingBookings && (
-                    <p className="mb-3 text-sm text-gray-400">
-                      Carregando horários...
-                    </p>
+                    <p className="mb-3 text-sm text-gray-400">Carregando horários...</p>
                   )}
 
                   {!date && (
@@ -288,7 +262,6 @@ const ServiceIntem = ({ service }: ServiceIntemProps) => {
                   {!!date && (
                     <div className="grid grid-cols-3 gap-2">
                       {timeSlots
-                        // ✅ some se estiver ocupado no banco OU oculto (otimista)
                         .filter((t) => !bookedTimes.has(t) && !hiddenTimes.has(t))
                         .map((t) => (
                           <Button
@@ -304,9 +277,8 @@ const ServiceIntem = ({ service }: ServiceIntemProps) => {
                   )}
 
                   {date &&
-                    timeSlots.filter(
-                      (t) => !bookedTimes.has(t) && !hiddenTimes.has(t),
-                    ).length === 0 && (
+                    timeSlots.filter((t) => !bookedTimes.has(t) && !hiddenTimes.has(t))
+                      .length === 0 && (
                       <p className="mt-3 text-sm text-gray-400">
                         Nenhum horário disponível para esse dia.
                       </p>
@@ -320,23 +292,18 @@ const ServiceIntem = ({ service }: ServiceIntemProps) => {
                   )}
                 </div>
 
-                {/* Resumo */}
                 {canConfirm && (
                   <Card className="mb-4">
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex flex-col">
-                          <h2 className="text-sm font-semibold">
-                            {service.name}
-                          </h2>
+                          <h2 className="text-sm font-semibold">{service.name}</h2>
                           <p className="text-xs text-gray-400">
                             {date!.toLocaleDateString("pt-BR")} • {time}
                           </p>
                         </div>
 
-                        <p className="text-sm font-bold text-primary">
-                          {priceFormatted}
-                        </p>
+                        <p className="text-sm font-bold text-primary">{priceFormatted}</p>
                       </div>
                     </CardContent>
                   </Card>

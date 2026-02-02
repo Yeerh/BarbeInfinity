@@ -233,7 +233,8 @@ exports.Prisma.NullsOrder = {
 exports.BookingStatus = exports.$Enums.BookingStatus = {
   PENDENTE: 'PENDENTE',
   CONFIRMADO: 'CONFIRMADO',
-  FINALIZADO: 'FINALIZADO'
+  FINALIZADO: 'FINALIZADO',
+  CANCELADO: 'CANCELADO'
 };
 
 exports.Prisma.ModelName = {

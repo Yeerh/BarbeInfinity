@@ -66,7 +66,8 @@ export namespace $Enums {
   export const BookingStatus: {
   PENDENTE: 'PENDENTE',
   CONFIRMADO: 'CONFIRMADO',
-  FINALIZADO: 'FINALIZADO'
+  FINALIZADO: 'FINALIZADO',
+  CANCELADO: 'CANCELADO'
 };
 
 export type BookingStatus = (typeof BookingStatus)[keyof typeof BookingStatus]

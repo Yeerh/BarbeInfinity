@@ -1,24 +1,25 @@
 "use server";
 
-import { db } from "@/app/_lib/prisma";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/app/_lib/auth";
+import { db } from "@/app/_lib/prisma";
 
 export async function cancelBooking(bookingId: string) {
   const session = await getServerSession(authOptions);
 
   if (!session?.user) {
-    throw new Error("Não autorizado.");
+    throw new Error("Não autenticado.");
   }
 
   const userId = (session.user as unknown as { id?: string }).id;
+
   if (!userId) {
-    throw new Error("Não autorizado.");
+    throw new Error("Usuário inválido.");
   }
 
   const booking = await db.booking.findUnique({
     where: { id: bookingId },
-    select: { id: true, userId: true, status: true },
+    select: { id: true, userId: true }, // ✅ sem status
   });
 
   if (!booking) {
@@ -26,14 +27,10 @@ export async function cancelBooking(bookingId: string) {
   }
 
   if (booking.userId !== userId) {
-    throw new Error("Você não pode cancelar essa reserva.");
+    throw new Error("Sem permissão para cancelar essa reserva.");
   }
 
-  // opcional: não deixa cancelar finalizado
-  if (booking.status === "FINALIZADO") {
-    throw new Error("Não é possível cancelar uma reserva finalizada.");
-  }
-
+  // ✅ como você não tem status no schema, o cancelamento é deletar
   await db.booking.delete({
     where: { id: bookingId },
   });

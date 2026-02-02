@@ -1,17 +1,19 @@
 "use server";
 
+import { startOfDay, endOfDay } from "date-fns";
 import { db } from "@/app/_lib/prisma";
-import { endOfDay, startOfDay } from "date-fns";
 
-interface GetBookingsProps {
+export interface GetBookingsParams {
   serviceId: string;
   date: Date;
 }
 
-export async function getBookings({ serviceId, date }: GetBookingsProps) {
-  if (!serviceId || !date) {
-    throw new Error("serviceId e date são obrigatórios.");
-  }
+export type DayBooking = {
+  appointmentDate: string; // ISO
+};
+
+export async function getBookings(params: GetBookingsParams): Promise<DayBooking[]> {
+  const { serviceId, date } = params;
 
   const bookings = await db.booking.findMany({
     where: {
@@ -20,11 +22,15 @@ export async function getBookings({ serviceId, date }: GetBookingsProps) {
         gte: startOfDay(date),
         lte: endOfDay(date),
       },
+      // ✅ se você usa status, pode filtrar aqui
+      // status: { in: ["PENDENTE", "CONFIRMADO"] },
     },
-    orderBy: {
-      appointmentDate: "asc",
+    select: {
+      appointmentDate: true,
     },
   });
 
-  return bookings;
+  return bookings.map((b) => ({
+    appointmentDate: b.appointmentDate.toISOString(),
+  }));
 }

@@ -6,25 +6,35 @@ export interface CreateBookingParams {
   userId: string;
   serviceId: string;
   barbeShopId: string;
-  appointmentDate: Date; // data + hora final
+  appointmentDate: Date;
 }
 
 export async function createBooking(params: CreateBookingParams) {
   const { userId, serviceId, barbeShopId, appointmentDate } = params;
 
-  if (!userId || !serviceId || !barbeShopId || !appointmentDate) {
-    throw new Error("Parâmetros inválidos para criar o agendamento.");
+  // ✅ trava por código (evita duplicar o mesmo horário)
+  const exists = await db.booking.findFirst({
+    where: {
+      serviceId,
+      appointmentDate,
+    },
+    select: { id: true },
+  });
+
+  if (exists) {
+    throw new Error("Horário já reservado.");
   }
 
-  const booking = await db.booking.create({
+  await db.booking.create({
     data: {
       userId,
       serviceId,
       barbeShopId,
       appointmentDate,
-      date: new Date(), // campo "date" do seu schema (se for "createdAt", dá pra remover)
+      date: appointmentDate,
+      // status: "PENDENTE", // se tiver status no schema
     },
   });
 
-  return booking;
+  return { ok: true };
 }

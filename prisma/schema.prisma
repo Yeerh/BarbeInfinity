@@ -119,17 +119,17 @@ enum BookingStatus {
   PENDENTE
   CONFIRMADO
   FINALIZADO
+  CANCELADO
 }
 
 model Booking {
-  id              String           @id @default(cuid())
+  id              String        @id @default(cuid())
   userId          String
   barbeShopId     String
   serviceId       String
   appointmentDate DateTime
   date            DateTime
-
-  status          BookingStatus    @default(PENDENTE)
+  status BookingStatus @default(PENDENTE)
 
   user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   barbeShop  BarbeShop        @relation(fields: [barbeShopId], references: [id], onDelete: Cascade)
