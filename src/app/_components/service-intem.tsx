@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { BarbeShopService } from "@prisma/client";
 import Image from "next/image";
 import { ptBR } from "date-fns/locale";
 import { addMinutes, format, isBefore, startOfDay } from "date-fns";
@@ -18,7 +17,15 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui
 import { Calendar } from "./ui/calendar";
 
 interface ServiceIntemProps {
-  service: BarbeShopService;
+  service: {
+    id: string;
+    barbeShopId: string;
+    name: string;
+    description?: string | null;
+    price: number | string;
+    durationInMinutes: number;
+    imageUrl?: string | null;
+  };
 }
 
 const OPEN_TIME = "08:00";
