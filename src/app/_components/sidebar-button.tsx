@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -36,6 +36,7 @@ import { signIn, signOut, useSession } from "next-auth/react";
 const SidebarButton = () => {
   const { data: session } = useSession();
   const user = session?.user;
+  const role = (user as { role?: string } | undefined)?.role;
 
   const handleLoginWithGoogleClick = async () => {
     await signIn("google", { callbackUrl: "/" });
@@ -58,10 +59,10 @@ const SidebarButton = () => {
           <SheetTitle>Menu</SheetTitle>
         </SheetHeader>
 
-        {/* Login (apenas se NÃO estiver logado) */}
+        {/* Login (apenas se NÃƒO estiver logado) */}
         {!user && (
           <div className="flex items-center justify-between gap-3 border-b border-solid py-5">
-            <h2 className="text-lg font-bold">Olá, faça seu login!</h2>
+            <h2 className="text-lg font-bold">OlÃ¡, faÃ§a seu login!</h2>
 
             <Dialog>
               <DialogTrigger asChild>
@@ -72,7 +73,7 @@ const SidebarButton = () => {
 
               <DialogContent className="w-[90vw] sm:max-w-[425px]">
                 <DialogHeader>
-                  <DialogTitle>Faça seu login</DialogTitle>
+                  <DialogTitle>FaÃ§a seu login</DialogTitle>
                   <DialogDescription>
                     Conecte-se usando sua conta Google.
                   </DialogDescription>
@@ -104,7 +105,7 @@ const SidebarButton = () => {
 
             <div className="ml-3 flex flex-col">
               <p className="text-sm font-bold leading-tight">
-                {user.name ?? "Usuário"}
+                {user.name ?? "UsuÃ¡rio"}
               </p>
               <p className="text-xs leading-tight text-gray-500">
                 {user.email ?? ""}
@@ -113,21 +114,29 @@ const SidebarButton = () => {
           </div>
         )}
 
-        {/* Navegação */}
+        {/* NavegaÃ§Ã£o */}
         <div className="mt-6 flex flex-col gap-2">
           <Button asChild variant="ghost" className="justify-start gap-2">
             <Link href="/">
               <HomeIcon size={18} />
-              Início
+              InÃ­cio
             </Link>
           </Button>
-<Button asChild variant="ghost" className="justify-start gap-2">
-  <Link href="bookings">
-    <CalendarIcon size={18} />
-    Agendamentos
-  </Link>
-</Button>
+          <Button asChild variant="ghost" className="justify-start gap-2">
+            <Link href="bookings">
+              <CalendarIcon size={18} />
+              Agendamentos
+            </Link>
+          </Button>
 
+          {role === "ADMIN" && (
+            <Button asChild variant="ghost" className="justify-start gap-2">
+              <Link href="/admin/bookings">
+                <CalendarIcon size={18} />
+                Admin
+              </Link>
+            </Button>
+          )}
 
           {/* Categorias (AGORA COM LINKS) */}
           <div className="mt-4">
@@ -178,3 +187,5 @@ const SidebarButton = () => {
 };
 
 export default SidebarButton;
+
+

@@ -19,12 +19,28 @@ export const authOptions: NextAuthOptions = {
 
   callbacks: {
     async jwt({ token, user }) {
-      if (user) token.id = user.id;
+      if (user) {
+        token.id = user.id;
+        token.role =
+          (user as { role?: "ADMIN" | "CLIENT" }).role ?? "CLIENT";
+      }
+      if (token.id && !token.role) {
+        const dbUser = await db.user.findUnique({
+          where: { id: token.id as string },
+          select: { role: true },
+        });
+        token.role = (dbUser?.role ?? "CLIENT") as "ADMIN" | "CLIENT";
+      }
       return token;
     },
     async session({ session, token }) {
       if (session.user && token?.id) {
         session.user.id = token.id as string;
+        (
+          session.user as typeof session.user & {
+            role?: "ADMIN" | "CLIENT";
+          }
+        ).role = token.role as "ADMIN" | "CLIENT";
       }
       return session;
     },

@@ -242,7 +242,7 @@ const ServiceIntem = ({ service }: ServiceIntemProps) => {
                 </Button>
               </SheetTrigger>
 
-              <SheetContent>
+              <SheetContent className="max-h-[100dvh] overflow-y-auto pb-8">
                 <SheetHeader>
                   <SheetTitle>Fazer Reserva</SheetTitle>
                 </SheetHeader>

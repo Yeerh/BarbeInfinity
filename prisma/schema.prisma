@@ -11,12 +11,18 @@ datasource db {
   provider = "postgresql"
 }
 
+enum UserRole {
+  ADMIN
+  CLIENT
+}
+
 model User {
   id            String          @id @default(cuid())
   name          String?
   email         String          @unique
   emailVerified DateTime?
   image         String?
+  role          UserRole        @default(CLIENT)
   accounts      Account[]
   sessions      Session[]
   Authenticator Authenticator[]
