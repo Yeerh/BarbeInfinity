@@ -22,6 +22,9 @@ export async function createBooking(
     }
 
     const { serviceId, barbeShopId, appointmentDate } = params;
+    if (!serviceId || !barbeShopId) {
+      return { ok: false, message: "Serviço ou barbearia inválidos." };
+    }
     const appointmentDateObj = new Date(appointmentDate);
     if (Number.isNaN(appointmentDateObj.getTime())) {
       return { ok: false, message: "Data inválida para o agendamento." };
