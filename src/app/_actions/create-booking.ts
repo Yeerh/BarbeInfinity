@@ -49,6 +49,9 @@ export async function createBooking(
     return { ok: true };
   } catch (err) {
     console.error("createBooking failed", err);
+    if (err instanceof Error && err.message) {
+      return { ok: false, message: err.message };
+    }
     return { ok: false, message: "Não foi possível criar a reserva." };
   }
 }

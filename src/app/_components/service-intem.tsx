@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { ptBR } from "date-fns/locale";
 import { addMinutes, format, isBefore, startOfDay } from "date-fns";
@@ -69,6 +70,7 @@ function dayKey(date: Date) {
 }
 
 const ServiceIntem = ({ service }: ServiceIntemProps) => {
+  const router = useRouter();
   const { data: session } = useSession();
   const userId = (session?.user as { id?: string } | undefined)?.id;
 
@@ -177,6 +179,14 @@ const ServiceIntem = ({ service }: ServiceIntemProps) => {
       });
       if (!result.ok) {
         toast.error(result.message);
+        // desfaz o “sumir” se o backend recusou
+        setHiddenTimesByDay((prev) => {
+          const copy = { ...prev };
+          const dayMap = { ...(copy[key] ?? {}) };
+          delete dayMap[selectedTime];
+          copy[key] = dayMap;
+          return copy;
+        });
         return;
       }
 
