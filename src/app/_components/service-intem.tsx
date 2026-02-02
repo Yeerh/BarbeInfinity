@@ -9,7 +9,8 @@ import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 
 import { createBooking } from "@/app/_actions/create-booking";
-import { getBookings, type DayBooking } from "@/app/_actions/get-bookings";
+import { getBookings } from "@/app/_actions/get-bookings";
+import type { DayBooking } from "@/app/_actions/get-bookings";
 
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
@@ -66,7 +67,6 @@ const ServiceIntem = ({ service }: ServiceIntemProps) => {
 
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [time, setTime] = useState<string | null>(null);
-
   const [dayBookings, setDayBookings] = useState<DayBooking[]>([]);
   const [isLoadingBookings, setIsLoadingBookings] = useState(false);
 

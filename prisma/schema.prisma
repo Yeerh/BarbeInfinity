@@ -5,7 +5,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "./generated"
 }
 
 datasource db {
@@ -128,17 +127,15 @@ model Booking {
   barbeShopId     String
   serviceId       String
   appointmentDate DateTime
-  date            DateTime
-  status BookingStatus @default(PENDENTE)
+  status          BookingStatus @default(PENDENTE)
 
-  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  barbeShop  BarbeShop        @relation(fields: [barbeShopId], references: [id], onDelete: Cascade)
-  service    BarbeShopService @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  barbeShop BarbeShop        @relation(fields: [barbeShopId], references: [id], onDelete: Cascade)
+  service   BarbeShopService @relation(fields: [serviceId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
-
 
 model Rating {
   id         String  @id @default(cuid())

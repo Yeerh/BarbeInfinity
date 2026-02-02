@@ -11,7 +11,7 @@ import BookingItem from "./_components/booking-intem";
 import Image from "next/image";
 import { db } from "./_lib/prisma";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../app/_lib/auth";
+import { authOptions } from "./_lib/auth";
 
 const Home = async () => {
   const session = await getServerSession(authOptions);

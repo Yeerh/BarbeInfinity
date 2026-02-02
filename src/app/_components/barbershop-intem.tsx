@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { BarbeShop } from "../../../prisma/generated/client";
+import type { BarbeShop } from "@prisma/client";
 
 import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";

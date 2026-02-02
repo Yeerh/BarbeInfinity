@@ -1,14 +1,15 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import type { Prisma } from "@prisma/client";
 
 import { cancelBooking } from "@/app/_actions/cancel-booking";
 
 import { Card, CardContent } from "./ui/card";
 import { Badge } from "./ui/badge";
-import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import {
   Sheet,
   SheetContent,
@@ -17,52 +18,30 @@ import {
   SheetTrigger,
 } from "./ui/sheet";
 import { Button } from "./ui/button";
-import { PhoneIcon, XCircle } from "lucide-react";
+import { PhoneIcon } from "lucide-react";
 
-import {
-  AlertDialog,
-  AlertDialogTrigger,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogCancel,
-  AlertDialogAction,
-} from "./ui/alert-dialog";
-
-import { toast } from "sonner";
-
-type BookingStatus = "PENDENTE" | "CONFIRMADO" | "FINALIZADO";
-
-type BookingWithRelations = {
-  id: string;
-  status: BookingStatus;
-  appointmentDate: Date | string;
-
-  service: {
-    id: string;
-    name: string;
-    price: unknown;
-  };
-
-  barbeShop: {
-    id: string;
-    name: string;
-    address: string;
-    phone: string;
-    imageUrl: string | null;
-  };
-};
+type BookingWithRelations = Prisma.BookingGetPayload<{
+  include: { service: true; barbeShop: true };
+}>;
 
 interface BookingItemProps {
   booking: BookingWithRelations;
 }
 
+const BOOKING_STATUS = {
+  PENDENTE: "PENDENTE",
+  CONFIRMADO: "CONFIRMADO",
+  FINALIZADO: "FINALIZADO",
+  CANCELADO: "CANCELADO",
+} as const;
+
+type BookingStatus = (typeof BOOKING_STATUS)[keyof typeof BOOKING_STATUS];
+
 const statusLabelMap: Record<BookingStatus, string> = {
   PENDENTE: "Pendente",
   CONFIRMADO: "Confirmado",
   FINALIZADO: "Finalizado",
+  CANCELADO: "Cancelado",
 };
 
 const statusVariantMap: Record<
@@ -72,14 +51,8 @@ const statusVariantMap: Record<
   PENDENTE: "outline",
   CONFIRMADO: "default",
   FINALIZADO: "secondary",
+  CANCELADO: "secondary",
 };
-
-function formatBRL(value: unknown) {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(Number(value));
-}
 
 function parsePhones(raw?: string | null) {
   if (!raw) return [];
@@ -91,64 +64,51 @@ function parsePhones(raw?: string | null) {
 
 function formatPhoneDisplay(phone: string) {
   const digits = phone.replace(/\D/g, "");
-  if (digits.length === 11) {
+  if (digits.length === 11)
     return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
-  }
-  if (digits.length === 10) {
+  if (digits.length === 10)
     return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
-  }
   return phone;
 }
 
-export default function BookingItem({ booking }: BookingItemProps) {
+const BookingItem = ({ booking }: BookingItemProps) => {
   const router = useRouter();
   const [isCancelling, setIsCancelling] = useState(false);
 
-  const date = useMemo(() => new Date(booking.appointmentDate), [booking]);
+  const date = new Date(booking.appointmentDate);
 
   const month = new Intl.DateTimeFormat("pt-BR", { month: "long" }).format(date);
   const day = new Intl.DateTimeFormat("pt-BR", { day: "2-digit" }).format(date);
-
-  const timeLabel = new Intl.DateTimeFormat("pt-BR", {
+  const time = new Intl.DateTimeFormat("pt-BR", {
     hour: "2-digit",
     minute: "2-digit",
   }).format(date);
 
-  const statusLabel = statusLabelMap[booking.status];
-  const statusVariant = statusVariantMap[booking.status];
-
-  const serviceName = booking.service.name;
-  const price = formatBRL(booking.service.price);
-
-  const barberName = booking.barbeShop.name;
-  const barberAddress = booking.barbeShop.address;
-  const barberImage = booking.barbeShop.imageUrl ?? "";
   const phones = parsePhones(booking.barbeShop.phone);
 
   const handleCopy = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      toast.success("Número copiado!");
     } catch {
       window.prompt("Copie o número:", text);
     }
   };
 
-  const doCancel = async () => {
-    if (booking.status === "FINALIZADO") {
-      toast.message("Esse agendamento já foi finalizado.");
+  const handleCancel = async () => {
+    if (
+      booking.status === BOOKING_STATUS.FINALIZADO ||
+      booking.status === BOOKING_STATUS.CANCELADO
+    ) {
       return;
     }
+
+    const ok = window.confirm("Tem certeza que deseja cancelar essa reserva?");
+    if (!ok) return;
 
     try {
       setIsCancelling(true);
       await cancelBooking(booking.id);
-
-      toast.success("Reserva cancelada com sucesso!");
       router.refresh();
-    } catch (e) {
-      console.error(e);
-      toast.error("Não foi possível cancelar a reserva.");
     } finally {
       setIsCancelling(false);
     }
@@ -161,24 +121,27 @@ export default function BookingItem({ booking }: BookingItemProps) {
           <Card className="cursor-pointer hover:opacity-95">
             <CardContent className="flex items-center justify-between p-5">
               <div className="flex flex-col gap-2">
-                <Badge variant={statusVariant}>{statusLabel}</Badge>
+                <Badge variant={statusVariantMap[booking.status]}>
+                  {statusLabelMap[booking.status]}
+                </Badge>
 
-                <h3 className="font-semibold">{serviceName}</h3>
+                <h3 className="font-semibold">{booking.service.name}</h3>
 
                 <div className="flex items-center gap-2">
                   <Avatar className="h-6 w-6">
-                    <AvatarImage src={barberImage} />
-                    <AvatarFallback>{barberName?.[0] ?? "B"}</AvatarFallback>
+                    <AvatarImage src={booking.barbeShop.imageUrl ?? ""} />
+                    <AvatarFallback>
+                      {booking.barbeShop.name?.[0] ?? "B"}
+                    </AvatarFallback>
                   </Avatar>
-
-                  <p className="text-sm">{barberName}</p>
+                  <p className="text-sm">{booking.barbeShop.name}</p>
                 </div>
               </div>
 
               <div className="flex flex-col items-center justify-center border-l-2 border-gray-200/20 pl-4 text-right leading-tight">
                 <p className="text-sm capitalize">{month}</p>
                 <p className="text-2xl font-bold">{day}</p>
-                <p className="text-sm">{timeLabel}</p>
+                <p className="text-sm">{time}</p>
               </div>
             </CardContent>
           </Card>
@@ -192,7 +155,6 @@ export default function BookingItem({ booking }: BookingItemProps) {
           </SheetHeader>
         </div>
 
-        {/* MAP */}
         <div className="px-5">
           <div className="relative h-[170px] w-full overflow-hidden rounded-2xl">
             <Image
@@ -202,103 +164,79 @@ export default function BookingItem({ booking }: BookingItemProps) {
               className="object-cover opacity-90"
               priority
             />
+            <div className="absolute bottom-3 left-3 right-3 rounded-2xl border border-white/10 bg-black/50 p-4 backdrop-blur-md">
+              <div className="flex items-center gap-3">
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={booking.barbeShop.imageUrl ?? ""} />
+                  <AvatarFallback>
+                    {booking.barbeShop.name?.[0] ?? "B"}
+                  </AvatarFallback>
+                </Avatar>
 
-            <div className="absolute bottom-3 left-3 right-3">
-              <Card className="border-white/10 bg-black/50 backdrop-blur-md">
-                <CardContent className="flex items-center gap-3 p-4">
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage src={barberImage} />
-                    <AvatarFallback>{barberName?.[0] ?? "B"}</AvatarFallback>
-                  </Avatar>
-
-                  <div className="min-w-0">
-                    <p className="truncate text-base font-semibold">
-                      {barberName}
-                    </p>
-                    <p className="truncate text-xs text-gray-300">
-                      {barberAddress}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+                <div className="min-w-0">
+                  <p className="truncate text-base font-semibold">
+                    {booking.barbeShop.name}
+                  </p>
+                  <p className="truncate text-xs text-gray-300">
+                    {booking.barbeShop.address}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* INFO CARD */}
         <div className="p-5">
-          <Badge variant={statusVariant} className="mb-4">
-            {statusLabel}
+          <Badge variant={statusVariantMap[booking.status]} className="mb-4">
+            {statusLabelMap[booking.status]}
           </Badge>
 
           <Card className="border-white/10 bg-white/5">
             <CardContent className="p-4">
               <div className="flex items-start justify-between gap-3">
-                <h3 className="text-base font-semibold">{serviceName}</h3>
-                <p className="text-base font-semibold">{price}</p>
+                <h3 className="text-base font-semibold">{booking.service.name}</h3>
+                <p className="text-base font-semibold">
+                  {new Intl.NumberFormat("pt-BR", {
+                    style: "currency",
+                    currency: "BRL",
+                  }).format(Number(booking.service.price))}
+                </p>
               </div>
 
               <div className="mt-4 space-y-3 text-sm">
                 <div className="flex items-center justify-between">
                   <p className="text-gray-400">Data</p>
                   <p className="font-medium">
-                    {day} de {month}
+                    {date.toLocaleDateString("pt-BR")}
                   </p>
                 </div>
 
                 <div className="flex items-center justify-between">
                   <p className="text-gray-400">Horário</p>
-                  <p className="font-medium">{timeLabel}</p>
+                  <p className="font-medium">{time}</p>
                 </div>
 
                 <div className="flex items-center justify-between">
                   <p className="text-gray-400">Barbearia</p>
-                  <p className="font-medium">{barberName}</p>
+                  <p className="font-medium">{booking.barbeShop.name}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* CANCELAR COM DIALOG */}
-          {booking.status !== "FINALIZADO" && (
-            <div className="mt-4">
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    className="w-full"
-                    disabled={isCancelling}
-                  >
-                    <XCircle className="mr-2" size={18} />
-                    Cancelar reserva
-                  </Button>
-                </AlertDialogTrigger>
+          {booking.status !== BOOKING_STATUS.FINALIZADO &&
+            booking.status !== BOOKING_STATUS.CANCELADO && (
+              <Button
+                type="button"
+                variant="destructive"
+                className="mt-4 w-full"
+                disabled={isCancelling}
+                onClick={handleCancel}
+              >
+                {isCancelling ? "Cancelando..." : "Cancelar reserva"}
+              </Button>
+            )}
 
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Cancelar reserva?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Tem certeza que deseja cancelar? Isso vai liberar o horário
-                      para outras pessoas.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Voltar</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={doCancel}
-                      className="bg-red-600 hover:bg-red-700"
-                    >
-                      {isCancelling ? "Cancelando..." : "Sim, cancelar"}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-          )}
-
-          {/* PHONES */}
           {phones.length > 0 && (
             <div className="mt-4 space-y-3">
               {phones.map((p) => (
@@ -329,4 +267,6 @@ export default function BookingItem({ booking }: BookingItemProps) {
       </SheetContent>
     </Sheet>
   );
-}
+};
+
+export default BookingItem;

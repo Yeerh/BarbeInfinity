@@ -4,6 +4,7 @@ export interface QuickSearchOption {
   imageUrl: string
   label: string
   title: string
+  slug: string
 }
 
 export const quickSearchOptions: QuickSearchOption[] = [
@@ -11,21 +12,25 @@ export const quickSearchOptions: QuickSearchOption[] = [
     imageUrl: "/cabelo.png",
     label: "Cabelo",
     title: "Cortes de cabelo",
+    slug: "cabelo",
   },
   {
     imageUrl: "/acabamento.png",
     label: "Acabamento",
     title: "Acabamentos",
+    slug: "acabamento",
   },
 
   {
     imageUrl: "/sobrancelha.png",
     label: "Sobrancelha",
     title: "Design de sobrancelha",
+    slug: "sobrancelha",
   },
   {
     imageUrl: "/barba.png",
     label: "Barba",
     title: "Barba",
+    slug: "barba",
   },
 ]
