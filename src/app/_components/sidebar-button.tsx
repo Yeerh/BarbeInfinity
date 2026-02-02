@@ -36,7 +36,7 @@ import { signIn, signOut, useSession } from "next-auth/react";
 const SidebarButton = () => {
   const { data: session } = useSession();
   const user = session?.user;
-  const role = (user as { role?: string } | undefined)?.role;
+  const role = (user as { role?: "ADMIN" | "CLIENT" } | undefined)?.role;
 
   const handleLoginWithGoogleClick = async () => {
     await signIn("google", { callbackUrl: "/" });
@@ -59,10 +59,9 @@ const SidebarButton = () => {
           <SheetTitle>Menu</SheetTitle>
         </SheetHeader>
 
-        {/* Login (apenas se NÃƒO estiver logado) */}
         {!user && (
           <div className="flex items-center justify-between gap-3 border-b border-solid py-5">
-            <h2 className="text-lg font-bold">OlÃ¡, faÃ§a seu login!</h2>
+            <h2 className="text-lg font-bold">Olá, faça seu login!</h2>
 
             <Dialog>
               <DialogTrigger asChild>
@@ -73,10 +72,8 @@ const SidebarButton = () => {
 
               <DialogContent className="w-[90vw] sm:max-w-[425px]">
                 <DialogHeader>
-                  <DialogTitle>FaÃ§a seu login</DialogTitle>
-                  <DialogDescription>
-                    Conecte-se usando sua conta Google.
-                  </DialogDescription>
+                  <DialogTitle>Faça seu login</DialogTitle>
+                  <DialogDescription>Entre com sua conta.</DialogDescription>
                 </DialogHeader>
 
                 <Button
@@ -88,12 +85,18 @@ const SidebarButton = () => {
                   <Image src="/google.png" alt="Google" width={18} height={18} />
                   Google
                 </Button>
+
+                <div className="mt-4 text-xs text-gray-400">
+                  Acesso do administrador?{" "}
+                  <Link href="/admin/login" className="underline">
+                    Entrar
+                  </Link>
+                </div>
               </DialogContent>
             </Dialog>
           </div>
         )}
 
-        {/* Perfil (apenas se estiver logado) */}
         {user && (
           <div className="mt-4 flex items-center border-b border-solid pb-5">
             <Avatar className="h-10 w-10">
@@ -105,7 +108,7 @@ const SidebarButton = () => {
 
             <div className="ml-3 flex flex-col">
               <p className="text-sm font-bold leading-tight">
-                {user.name ?? "UsuÃ¡rio"}
+                {user.name ?? "Usuário"}
               </p>
               <p className="text-xs leading-tight text-gray-500">
                 {user.email ?? ""}
@@ -114,31 +117,36 @@ const SidebarButton = () => {
           </div>
         )}
 
-        {/* NavegaÃ§Ã£o */}
         <div className="mt-6 flex flex-col gap-2">
           <Button asChild variant="ghost" className="justify-start gap-2">
             <Link href="/">
               <HomeIcon size={18} />
-              InÃ­cio
+              Início
             </Link>
           </Button>
           <Button asChild variant="ghost" className="justify-start gap-2">
-            <Link href="bookings">
+            <Link href="/bookings">
               <CalendarIcon size={18} />
               Agendamentos
             </Link>
           </Button>
 
-          {role === "ADMIN" && (
+          {role === "ADMIN" ? (
             <Button asChild variant="ghost" className="justify-start gap-2">
               <Link href="/admin/bookings">
                 <CalendarIcon size={18} />
                 Admin
               </Link>
             </Button>
+          ) : (
+            <Button asChild variant="ghost" className="justify-start gap-2">
+              <Link href="/admin/login">
+                <CalendarIcon size={18} />
+                Área Admin
+              </Link>
+            </Button>
           )}
 
-          {/* Categorias (AGORA COM LINKS) */}
           <div className="mt-4">
             <p className="mb-2 text-xs font-bold uppercase text-gray-400">
               Categorias
@@ -167,7 +175,6 @@ const SidebarButton = () => {
           </div>
         </div>
 
-        {/* Sair (apenas se estiver logado) */}
         {user && (
           <div className="mt-auto border-t border-solid pt-4">
             <Button
@@ -187,5 +194,3 @@ const SidebarButton = () => {
 };
 
 export default SidebarButton;
-
-

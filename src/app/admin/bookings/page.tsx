@@ -1,4 +1,5 @@
 import { getServerSession } from "next-auth";
+import { redirect } from "next/navigation";
 
 import Header from "@/app/_components/header";
 import { Button } from "@/app/_components/ui/button";
@@ -17,7 +18,10 @@ const AdminBookingsPage = async () => {
   const session = await getServerSession(authOptions);
   const role = (session?.user as { role?: string } | null)?.role;
 
-  if (!session?.user?.id || role !== "ADMIN") {
+  if (!session?.user?.id) {
+    redirect("/admin/login");
+  }
+  if (role !== "ADMIN") {
     return (
       <>
         <Header />
