@@ -58,6 +58,7 @@ export async function createBooking(
         serviceId,
         barbeShopId: service.barbeShopId,
         appointmentDate: appointmentDateObj,
+        date: appointmentDateObj,
         // status: "PENDENTE", // se tiver status no schema
       },
     });

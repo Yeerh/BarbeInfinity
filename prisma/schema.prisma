@@ -127,6 +127,7 @@ model Booking {
   barbeShopId     String
   serviceId       String
   appointmentDate DateTime
+  date            DateTime
   status          BookingStatus @default(PENDENTE)
 
   user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
