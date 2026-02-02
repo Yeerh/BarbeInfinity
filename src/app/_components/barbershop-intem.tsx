@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { BarbeShop } from "@prisma/client";
 
 import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
@@ -8,7 +7,12 @@ import { Badge } from "./ui/badge";
 import { StarIcon } from "lucide-react";
 
 interface BarbeShopIntemProps {
-  barbeShop: BarbeShop;
+  barbeShop: {
+    id: string;
+    name: string;
+    address: string;
+    imageUrl?: string | null;
+  };
 }
 
 const BarbeShopIntem = ({ barbeShop }: BarbeShopIntemProps) => {
