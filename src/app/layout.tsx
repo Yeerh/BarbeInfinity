@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 
+
 import { Toaster } from "./_components/ui/sonner";
 import AuthProvider from "./_providers/auth";
 
@@ -20,6 +21,11 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "InfinityBarber",
   description: "Plataforma de agendamentos para barbearias",
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({
