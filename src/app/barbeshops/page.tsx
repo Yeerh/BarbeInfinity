@@ -22,6 +22,7 @@ const BarbeshopsPage = async ({ searchParams }: BarbeshopsPageProps) => {
         }
       : undefined,
   });
+  type BarbeShopItem = Awaited<typeof barbeshops>[number];
 
   return (
     <>
@@ -35,7 +36,7 @@ const BarbeshopsPage = async ({ searchParams }: BarbeshopsPageProps) => {
         </h2>
 
         <div className="grid grid-cols-2 gap-4">
-          {barbeshops.map((barbeshop) => (
+          {barbeshops.map((barbeshop: BarbeShopItem) => (
             <BarbeShopIntem key={barbeshop.id} barbeShop={barbeshop} />
           ))}
         </div>

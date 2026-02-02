@@ -1,7 +1,6 @@
 "use server";
 
 import { startOfDay, endOfDay } from "date-fns";
-import type { Prisma } from "@prisma/client";
 import { db } from "@/app/_lib/prisma";
 
 export interface GetBookingsParams {
@@ -29,11 +28,9 @@ export async function getBookings(params: GetBookingsParams): Promise<DayBooking
     select: {
       appointmentDate: true,
     },
-  })) as Prisma.BookingGetPayload<{
-    select: { appointmentDate: true };
-  }>[];
+  })) as Array<{ appointmentDate: Date }>;
 
-  return bookings.map((b) => ({
+  return bookings.map((b: { appointmentDate: Date }) => ({
     appointmentDate: b.appointmentDate.toISOString(),
   }));
 }
