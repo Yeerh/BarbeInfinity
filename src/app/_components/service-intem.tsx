@@ -184,6 +184,7 @@ const ServiceIntem = ({ service }: ServiceIntemProps) => {
       setDayBookings(refreshed);
 
       toast.success("Reserva criada com sucesso!");
+      router.push("/bookings");
     } catch (err) {
       console.error(err);
 
