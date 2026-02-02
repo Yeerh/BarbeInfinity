@@ -6,7 +6,7 @@ import { authOptions } from "@/app/_lib/auth";
 
 export interface CreateBookingParams {
   serviceId: string;
-  barbeShopId: string;
+  barbeShopId?: string;
   appointmentDate: string;
 }
 
@@ -21,9 +21,9 @@ export async function createBooking(
       return { ok: false, message: "Para agendar, você precisa estar logado." };
     }
 
-    const { serviceId, barbeShopId, appointmentDate } = params;
-    if (!serviceId || !barbeShopId) {
-      return { ok: false, message: "Serviço ou barbearia inválidos." };
+    const { serviceId, appointmentDate } = params;
+    if (!serviceId) {
+      return { ok: false, message: "Serviço inválido." };
     }
     const appointmentDateObj = new Date(appointmentDate);
     if (Number.isNaN(appointmentDateObj.getTime())) {
@@ -43,22 +43,24 @@ export async function createBooking(
       return { ok: false, message: "Horário já reservado." };
     }
 
+    const service = await db.barbeShopService.findUnique({
+      where: { id: serviceId },
+      select: { barbeShopId: true },
+    });
+
+    if (!service?.barbeShopId) {
+      return { ok: false, message: "Serviço ou barbearia inválidos." };
+    }
+
     await db.booking.create({
       data: {
         userId,
         serviceId,
-        barbeShopId,
+        barbeShopId: service.barbeShopId,
         appointmentDate: appointmentDateObj,
         // status: "PENDENTE", // se tiver status no schema
       },
     });
-    console.log("booking created", {
-      userId,
-      serviceId,
-      barbeShopId,
-      appointmentDate: appointmentDateObj.toISOString(),
-    });
-
     return { ok: true };
   } catch (err) {
     console.error("createBooking failed", err);
