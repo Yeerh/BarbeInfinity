@@ -1,16 +1,11 @@
 // src/app/bookings/page.tsx
 import { notFound } from "next/navigation";
 import { getServerSession } from "next-auth";
-import type { Prisma } from "@prisma/client";
 
 import Header from "../_components/header";
 import BookingItem from "../_components/booking-intem";
 import { db } from "../_lib/prisma";
 import { authOptions } from "../_lib/auth";
-
-type BookingWithRelations = Prisma.BookingGetPayload<{
-  include: { service: true; barbeShop: true };
-}>;
 
 const BookingsPage = async () => {
   const session = await getServerSession(authOptions);
@@ -28,6 +23,7 @@ const BookingsPage = async () => {
       barbeShop: true,
     },
   });
+  type BookingWithRelations = Awaited<typeof bookings>[number];
 
   return (
     <>
@@ -37,8 +33,8 @@ const BookingsPage = async () => {
         <h1 className="text-xl font-bold">Agendamentos</h1>
 
         <div className="mt-4 flex flex-col gap-3">
-          {bookings.map((booking) => (
-            <BookingItem key={booking.id} booking={booking as BookingWithRelations} />
+          {bookings.map((booking: BookingWithRelations) => (
+            <BookingItem key={booking.id} booking={booking} />
           ))}
         </div>
       </div>

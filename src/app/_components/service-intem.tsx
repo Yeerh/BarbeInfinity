@@ -22,7 +22,7 @@ interface ServiceIntemProps {
     barbeShopId: string;
     name: string;
     description?: string | null;
-    price: number | string;
+    price: number | string | { toString(): string };
     durationInMinutes: number;
     imageUrl?: string | null;
   };

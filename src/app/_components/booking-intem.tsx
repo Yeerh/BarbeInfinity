@@ -25,7 +25,7 @@ type BookingWithRelations = {
   status: BookingStatus;
   service: {
     name: string;
-    price: number | string;
+    price: number | string | { toString(): string };
   };
   barbeShop: {
     name: string;
