@@ -171,7 +171,6 @@ const ServiceIntem = ({ service }: ServiceIntemProps) => {
       setIsLoading(true);
 
       await createBooking({
-        userId,
         serviceId: service.id,
         barbeShopId: service.barbeShopId,
         appointmentDate,

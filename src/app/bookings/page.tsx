@@ -1,5 +1,4 @@
-// src/app/bookings/page.tsx
-import { notFound } from "next/navigation";
+﻿// src/app/bookings/page.tsx
 import { getServerSession } from "next-auth";
 
 import Header from "../_components/header";
@@ -10,8 +9,19 @@ import { authOptions } from "../_lib/auth";
 const BookingsPage = async () => {
   const session = await getServerSession(authOptions);
 
-  // bloqueia se não logado
-  if (!session?.user?.id) return notFound();
+  if (!session?.user?.id) {
+    return (
+      <>
+        <Header />
+        <div className="p-5">
+          <h1 className="text-xl font-bold">Agendamentos</h1>
+          <p className="mt-3 text-sm text-gray-400">
+            Para ver seus agendamentos, você precisa estar logado em uma conta.
+          </p>
+        </div>
+      </>
+    );
+  }
 
   const userId = session.user.id;
 
@@ -43,3 +53,5 @@ const BookingsPage = async () => {
 };
 
 export default BookingsPage;
+
+
