@@ -17,10 +17,10 @@ interface BarbeShopIntemProps {
 
 const BarbeShopIntem = ({ barbeShop }: BarbeShopIntemProps) => {
   return (
-    <Card className="min-w-[159px] overflow-hidden rounded-2xl shadow-sm">
+    <Card className="min-w-[159px] overflow-hidden rounded-2xl shadow-sm md:min-w-0 md:w-full">
       <CardContent className="p-1">
         {/* Imagem */}
-        <div className="relative h-[159px] w-[159px]">
+        <div className="relative h-[159px] w-[159px] md:h-48 md:w-full">
           <Image
             src={barbeShop.imageUrl ?? "/placeholder.png"}
             alt={barbeShop.name}
@@ -39,7 +39,7 @@ const BarbeShopIntem = ({ barbeShop }: BarbeShopIntemProps) => {
         </div>
 
         {/* Conteúdo */}
-        <div className="w-[159px] px-1 py-3">
+        <div className="w-[159px] px-1 py-3 md:w-full">
           <h3 className="line-clamp-1 font-semibold leading-tight">
             {barbeShop.name}
           </h3>
@@ -51,7 +51,7 @@ const BarbeShopIntem = ({ barbeShop }: BarbeShopIntemProps) => {
           <Button
             asChild
             variant="secondary"
-            className="mx-auto mt-3 h-9 w-[140px] text-sm font-medium"
+            className="mx-auto mt-3 h-9 w-[140px] text-sm font-medium md:w-full"
           >
             <Link href={`/barbeshops/${barbeShop.id}`}>Agendar</Link>
           </Button>

@@ -53,6 +53,19 @@ async function main() {
     "Avenida Clássica, 707",
   ];
 
+  const descriptions = [
+  "Clima retro com atendimento moderno, cortes classicos e barbas impecaveis em um ambiente aconchegante.",
+  "Especialistas em visuais atuais, combinamos tecnica e cuidado para um acabamento preciso.",
+  "Ritual completo de barbear com toalha quente e navalha, para quem valoriza tradicao.",
+  "Elegancia masculina, atendimento premium e servicos pensados para o seu estilo.",
+  "Equipe versatil, cortes personalizados e produtos de alta qualidade para o dia a dia.",
+  "Barbearia urbana com pegada moderna, foco em detalhes e atendimento agil.",
+  "Ambiente sofisticado com servicos premium e consultoria de imagem.",
+  "Acabamento refinado, cuidado com cada traco e experiencia confortavel.",
+  "Atitude e praticidade, cortes rapidos sem abrir mao da personalidade.",
+  "Tradicao e qualidade, cortes atemporais e barbas bem alinhadas.",
+];
+
   const services = [
     {
       name: "Corte de Cabelo",
@@ -110,8 +123,7 @@ async function main() {
         address: addresses[i],
         imageUrl: images[i],
         phone: "(11) 99999-9999",
-        description:
-          "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec ac augue ullamcorper, pharetra orci mollis, auctor tellus.",
+        description: descriptions[i],
       },
     });
 
