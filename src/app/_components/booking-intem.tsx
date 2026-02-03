@@ -18,6 +18,7 @@ import {
 } from "./ui/sheet";
 import { Button } from "./ui/button";
 import { PhoneIcon } from "lucide-react";
+import { toast } from "sonner";
 
 type BookingWithRelations = {
   id: string;
@@ -119,7 +120,14 @@ const BookingItem = ({ booking }: BookingItemProps) => {
     try {
       setIsCancelling(true);
       await cancelBooking(booking.id);
+      toast.success("Reserva cancelada com sucesso.");
       router.refresh();
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Não foi possível cancelar a reserva.";
+      toast.error(message);
     } finally {
       setIsCancelling(false);
     }

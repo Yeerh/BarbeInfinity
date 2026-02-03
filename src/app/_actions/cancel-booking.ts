@@ -23,9 +23,13 @@ export async function cancelBooking(bookingId: string) {
     throw new Error("Não é possível cancelar uma reserva finalizada.");
   }
 
+  if (booking.status === "CANCELADO") {
+    return;
+  }
+
   await db.booking.update({
     where: { id: bookingId },
-    data: { status: "PENDENTE" }, // ou você pode criar CANCELADO se quiser
+    data: { status: "CANCELADO" },
   });
 
   // Se você quer realmente "liberar horário" removendo do banco:
