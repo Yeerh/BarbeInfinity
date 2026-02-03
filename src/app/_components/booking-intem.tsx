@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { cancelBooking } from "@/app/_actions/cancel-booking";
+import { confirmUserBooking } from "@/app/_actions/confirm-user-booking";
 
 import { Card, CardContent } from "./ui/card";
 import { Badge } from "./ui/badge";
@@ -86,6 +87,7 @@ function formatPhoneDisplay(phone: string) {
 const BookingItem = ({ booking }: BookingItemProps) => {
   const router = useRouter();
   const [isCancelling, setIsCancelling] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
 
   const date = new Date(booking.appointmentDate);
 
@@ -130,6 +132,31 @@ const BookingItem = ({ booking }: BookingItemProps) => {
       toast.error(message);
     } finally {
       setIsCancelling(false);
+    }
+  };
+
+  const handleConfirm = async () => {
+    if (
+      booking.status !== BOOKING_STATUS.PENDENTE ||
+      isConfirming ||
+      isCancelling
+    ) {
+      return;
+    }
+
+    try {
+      setIsConfirming(true);
+      await confirmUserBooking(booking.id);
+      toast.success("Reserva confirmada com sucesso.");
+      router.refresh();
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Nao foi possivel confirmar a reserva.";
+      toast.error(message);
+    } finally {
+      setIsConfirming(false);
     }
   };
 
@@ -243,13 +270,24 @@ const BookingItem = ({ booking }: BookingItemProps) => {
             </CardContent>
           </Card>
 
+          {booking.status === BOOKING_STATUS.PENDENTE && (
+            <Button
+              type="button"
+              className="mt-4 w-full"
+              disabled={isConfirming || isCancelling}
+              onClick={handleConfirm}
+            >
+              {isConfirming ? "Confirmando..." : "Confirmar reserva"}
+            </Button>
+          )}
+
           {booking.status !== BOOKING_STATUS.FINALIZADO &&
             booking.status !== BOOKING_STATUS.CANCELADO && (
               <Button
                 type="button"
                 variant="destructive"
-                className="mt-4 w-full"
-                disabled={isCancelling}
+                className="mt-2 w-full"
+                disabled={isCancelling || isConfirming}
                 onClick={handleCancel}
               >
                 {isCancelling ? "Cancelando..." : "Cancelar reserva"}
